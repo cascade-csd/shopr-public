@@ -12,7 +12,7 @@ flowchart TD
     SIM[Simulation Engine<br/>Persona prompts, AI orchestration,<br/>structured results]
     DATA[Data & Platform Services<br/>Supabase Auth, PostgreSQL, RLS]
     CREDIT[Credit & Payment Services<br/>Credit ledger, orders, webhooks]
-    AI[AI Provider]
+    AI[Claude]
     WEB[Public Websites]
     PAY[Payment Provider]
 
@@ -29,47 +29,47 @@ flowchart TD
     CREDIT --> PAY
 ```
 
-## Core Components
+Core Components
 
-### 1. Web UI
+1. Web UI
 
-The web interface is built with Next.js App Router and React. It provides the landing page, authentication, analysis dashboard, website comparison, report history, persona interviews, and credit management.
+Next.js App Router and React. Provides the landing page, authentication, analysis dashboard, website comparison, report history, persona interviews, and credit management.
 
-### 2. Application & API Layer
+2. Application & API Layer
 
-The application layer is the entry point for user requests. Its responsibilities include:
+Entry point for user requests. Responsibilities:
 
-- authenticating and authorizing users;
-- validating URLs and analysis parameters;
-- coordinating the analysis workflow;
-- exposing endpoints for reports, payments, promotions, and webhooks; and
-- ensuring failed operations do not leave credit transactions in an inconsistent state.
+· authenticate and authorize users;
+· validate URLs and analysis parameters;
+· coordinate the analysis workflow;
+· expose endpoints for reports, payments, promotions, and webhooks;
+· ensure failed operations do not leave credit transactions in an inconsistent state.
 
-### 3. Website Ingestion
+3. Website Ingestion
 
-The ingestion module reads publicly available content from the website being analyzed. It validates the target before fetching data, discovers relevant pages, and extracts the content needed by the simulation engine.
+Reads publicly available content from the target website. Validates the target before fetching, discovers relevant pages, extracts content for the simulation engine.
 
-Key safeguards include blocking loopback and private-network addresses, request timeouts, response-size limits, and a limit on the number of pages processed per domain.
+Safeguards: blocking loopback and private-network addresses, request timeouts, response-size limits, and a cap on pages processed per domain.
 
-### 4. Simulation Engine
+4. Simulation Engine
 
-The simulation engine turns website content into evaluations from multiple customer personas. It manages:
+Turns website content into evaluations from multiple customer personas. Manages:
 
 1. selecting websites and personas;
-2. sending structured context to the AI provider;
+2. sending structured context to Claude;
 3. validating AI output against an evaluation schema;
-4. generating scores, objections, insights, recommendations, and summaries; and
-5. supporting both single-website and multi-website comparison analyses.
+4. generating scores, objections, insights, recommendations, and summaries;
+5. supporting single-website and multi-website comparison analyses.
 
-Results are stored in a structured format so they can be rendered by the UI and used by follow-up diagnostic features.
+Results are stored in a structured format for the UI and follow-up diagnostic features.
 
-### 5. Data & Platform Services
+5. Data & Platform Services
 
-Supabase provides authentication and PostgreSQL persistence. Core data includes user profiles, websites, analyses, simulation results, custom personas, and credit transactions.
+Supabase provides authentication and PostgreSQL persistence. Core data: user profiles, websites, analyses, simulation results, custom personas, credit transactions.
 
-Row Level Security (RLS) restricts access based on account ownership. Operations that require consistency across multiple records use database procedures or the appropriate server-side service layer.
+Row Level Security (RLS) restricts access by account ownership. Multi-record consistency uses database procedures or the server-side service layer.
 
-### 6. Credit & Payment Flow
+6. Credit & Payment Flow
 
 Analysis usage follows a reserve-consume-refund lifecycle:
 
@@ -80,9 +80,9 @@ flowchart LR
     P -->|Failure or abort| F[Refund credits]
 ```
 
-Top-ups are processed through an external payment provider. Order status is updated through a validated webhook, after which the purchased credits are added to the user's ledger.
+Top-ups go through an external payment provider. Order status updates through a validated webhook, then purchased credits are added to the user's ledger.
 
-## Analysis Flow
+Analysis Flow
 
 ```mermaid
 flowchart TD
@@ -99,16 +99,16 @@ flowchart TD
     B -. Validation failure .-> I
 ```
 
-If processing stops because of an error or cancellation, the reserved credits are returned through the refund path. This keeps the user's balance aligned with work that was actually completed.
+If processing stops due to error or cancellation, reserved credits return through the refund path. Balance stays aligned with completed work.
 
-## Security Principles
+Security Principles
 
-- User data is isolated through authentication and Row Level Security.
-- External websites are accessed only through the SSRF-protected ingestion path.
-- AI, database, and payment secrets are used only on the server.
-- Important inputs and outputs are validated before processing or persistence.
-- Payment fulfillment relies on validated webhooks rather than client-reported status alone.
+· User data isolated through authentication and Row Level Security.
+· External websites accessed only through the SSRF-protected ingestion path.
+· AI, database, and payment secrets used only on the server.
+· Inputs and outputs validated before processing or persistence.
+· Payment fulfillment relies on validated webhooks, not client-reported status.
 
-## Scope
+Scope
 
-This document describes the system's architecture and primary flows at a high level. Implementation details, deployment configuration, endpoint structure, and database schema may change without changing the architectural concepts described above.
+High-level architecture and primary flows. Implementation details, deployment configuration, endpoint structure, and database schema may change without changing the architectural concepts described above.
